@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint index.js --fix"
   },
+  "np": {
+    "tests": false
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
