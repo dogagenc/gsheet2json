@@ -148,7 +148,7 @@ module.exports = class Sheet {
 
     lines.values.forEach((line, lineIdx) => {
       if (!line || !line.length) {
-        throw new Error(`Error on line ${lineIdx} and range ${rangeName}`);
+        return;
       }
 
       if (lineIdx === 0) {
