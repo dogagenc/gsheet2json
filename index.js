@@ -5,6 +5,7 @@ const { google } = require('googleapis');
 const readline = require('readline');
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
+const Range = require('./range');
 
 module.exports = class Sheet {
   constructor(_options = {}) {
@@ -23,6 +24,7 @@ module.exports = class Sheet {
     }
 
     this.auth = null;
+    this.sheetsApi = null;
   }
 
   async getCredentials() {
@@ -47,7 +49,7 @@ module.exports = class Sheet {
   async getNewToken() {
     const authUrl = this.auth.generateAuthUrl({
       access_type: 'offline',
-      scope: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+      scope: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     console.log('Authorize this app by visiting this url:', authUrl);
@@ -106,18 +108,60 @@ module.exports = class Sheet {
     this.auth.setCredentials(token);
   }
 
-  async getData(sheetId, ranges = []) {
+  setApi() {
+    this.sheetsApi =
+      this.sheetsApi || google.sheets({ version: 'v4', auth: this.auth });
+  }
+
+  async getRangesRaw(sheetId, ranges) {
     if (!ranges.length) {
       throw new Error('You must specify ranges to get data!');
     }
-    console.log('Fetching spreadsheet data...');
-    const sheets = google.sheets({ version: 'v4', auth: this.auth });
-    const res = await sheets.spreadsheets.values.batchGet({
+
+    return this.sheetsApi.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
       ranges,
     });
+  }
+
+  async getData(sheetId, ranges = [], isRange = false) {
+    this.setApi();
+
+    console.log('Fetching spreadsheet data...');
+    const res = await this.getRangesRaw(sheetId, ranges);
 
     return this.formatData(res.data.valueRanges, ranges);
+  }
+
+  async getRanges(sheetId, ranges) {
+    this.setApi();
+    console.log('Fetching ranges...');
+
+    const res = await this.getRangesRaw(sheetId, ranges);
+
+    return this.prepareRanges(sheetId, ranges, res.data.valueRanges);
+  }
+
+  prepareRanges(sheetId, ranges, data) {
+    let rangeObj;
+
+    if (ranges.length === 1) {
+      rangeObj = this.prepareRange(sheetId, ranges[0], data[0]);
+    } else {
+      rangeObj = ranges.reduce((obj, range, rangeIdx) => {
+        obj[range] = this.prepareRange(sheetId, range, data[rangeIdx]);
+
+        return obj;
+      }, {});
+    }
+
+    return rangeObj;
+  }
+
+  prepareRange(sheetId, rangeName, data) {
+    const range = new Range(sheetId, rangeName, data, this.sheetsApi);
+
+    return range;
   }
 
   formatData(data, ranges) {
