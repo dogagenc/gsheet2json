@@ -1,6 +1,6 @@
 {
   "name": "gsheet2json",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Get and update values of Google Sheets",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
