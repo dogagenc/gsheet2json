@@ -2,11 +2,10 @@
   "name": "gsheet2json",
   "version": "0.1.0",
   "description": "Get and update values of Google Sheets",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint index.js --fix",
+    "lint": "eslint lib --fix",
     "release:patch": "np patch",
     "release:minor": "np minor",
     "release:major": "np major"
