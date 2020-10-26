@@ -12,6 +12,7 @@ declare class RangeLine {
 
 declare class Range {
   getLines(): RangeLine[];
+  newLine(): RangeLine;
   save(): Promise<void>;
 }
 
